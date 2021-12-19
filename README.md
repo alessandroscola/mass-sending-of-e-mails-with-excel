@@ -26,70 +26,70 @@ Public conn, rs As Object
 
 ' Code by Alessandro Scola www.alessandroscola.com
 '
-' Ricorda che per INSTALLARE BLAT:
+' Rimbember for INSTALL BLAT:
 ' blat -install -f <sender-email> -server <email-server> -u <login> -pw <password>
 '
-' Per INVIARE con BLAT:
-'   blat -Subject "Oggetto mail" -body "corpo email" -to destinatario@dominio.it -html
+' To SEND with BLAT:
+'   blat -Subject "email Subject" -body "email body" -to recipient@domain.xxx -html
 '
-'   oppure con corpo e-.mail in un file di testo "email_body.txt" il comando è:
-'   blat -s "c:\path\to\email_body.txt" -Subject "oggetto" -to destinatario@dominio.it -attach "c:\path\to\attachment.pdf" -html
+'   alternatively with the email body in a external file "email_body.txt", the command is:
+'   blat -s "c:\path\to\email_body.txt" -Subject "email Subject" -to recipient@domain.xxx -attach "c:\path\to\attachment.pdf" -html
 
-Sub invia_mails()
-Dim riga As Long
+Sub send_emails()
+Dim row As Long
 Dim RetVal As Variant
 Dim email As String
-Dim comando As String
+Dim command As String
 Dim obj_fso As Object
 Dim fileName As String
-Dim oggetto As String
-Dim testo As String
+Dim subject As String
+Dim body As String
 
-RetVal = MsgBox("Sei Sicuro di voler inviare tutte le -mails ?", vbQuestion + vbYesNo + vbDefaultButton2)
+RetVal = MsgBox("Are you sure you want to send all emails ?", vbQuestion + vbYesNo + vbDefaultButton2)
 If (RetVal <> vbYes) Then
   Exit Sub
 End If
 
 
-oggetto = Trim(Cells(2, 2).Value)
-oggetto = Replace(oggetto, Chr(34), "\" & Chr(34)) ' sostituisce un eventuale carattere " con \" per non interrompere la stringa di comando
+subject = Trim(Cells(2, 2).Value)
+subject = Replace(subject, Chr(34), "\" & Chr(34)) ' replaces any " character with a \" not to break the command string
 
 
-riga = 6
+row = 6
 
-email = Trim(Range("B" & riga).Value)
+email = Trim(Range("B" & row).Value)
 
 While (email <> "")
-  testo = Trim(Cells(4, 2).Value) ' preleva il testo on all'interno i TAGS %%
+  body = Trim(Cells(4, 2).Value) ' the initial body text
   
-  testo = Replace(testo, "%A%", Trim(Cells(riga, 1))) ' sostituisce %A% con il contenuto della cella A (colonna 1) alla riga relativa
-  testo = Replace(testo, "%E%", Trim(Cells(riga, 5))) ' sostituisce %E% con il contenuto della cella E (colonna 5) alla riga relativa
-  testo = Replace(testo, vbLf, "<br>") ' sostituisce gli "a capo" con il tag "<BR>" per mandare a capo le righe nelle email HTML
-  testo = Replace(testo, Chr(34), "\" & Chr(34)) ' sostituisce un eventuale carattere " con \" per non interrompere la stringa di comando
+  body = Replace(body, "%A%", Trim(Cells(row, 1))) ' replaces any %A% with the content of A column
+  body = Replace(body, "%E%", Trim(Cells(row, 5))) ' replaces any %E%with the content of E column
+  body = Replace(body, vbLf, "<br>") ' replaces any "new line" with the "<BR>" TAG. "<BR>" TAG work as "new line " in HTML e-mails
+  body = Replace(body, Chr(34), "\" & Chr(34)) ' replaces any " character with \" to not to break the command string
   
-  comando = "blat.exe -Subject " & Chr(34) & oggetto & Chr(34) & " -body " & Chr(34) & testo & Chr(34) & " -to " & email & " -html"
-  fileName = ThisWorkbook.Path & "\" & Trim(Range("C" & riga).Value) & Trim(Range("D" & riga).Value)
+  command = "blat.exe -Subject " & Chr(34) & subject & Chr(34) & " -body " & Chr(34) & body & Chr(34) & " -to " & email & " -html"
+  fileName = ThisWorkbook.Path & "\" & Trim(Range("C" & row).Value) & Trim(Range("D" & row).Value)
   
   If (fileExists(fileName)) Then
-     'Se il file allegato esiste aggiunge al comando "BLAT" la parte di codice per allegarlo
-     comando = comando & " -attach " & Chr(34) & fileName & Chr(34)
-     Cells(riga, 6).Value = "OK."
+     'Se il file allegato esiste aggiunge al command "BLAT" la parte di codice per allegarlo
+     command = command & " -attach " & Chr(34) & fileName & Chr(34)
+     Cells(row, 6).Value = "OK"
   Else
      'Altrimenti scrive alla colonna 6 un avviso !
-     Cells(riga, 6).Value = "ATTENZIONE: ALLEGATO NON TROVATO!"
+     Cells(row, 6).Value = "ATTENTION: ATTACHMENT NOT FOUND!"
   End If
-  RetVal = Shell(comando, vbMinimizedFocus)
+  RetVal = Shell(command, vbMinimizedFocus)
   
-  Application.Wait (Now + TimeValue("0:00:1")) ' Pausa di 1 secondo
+  Application.Wait (Now + TimeValue("0:00:1")) ' Pause for 1 second
   
-  riga = riga + 1
+  row = row + 1
 
-  email = Trim(Range("B" & riga).Value)
-  fileName = ThisWorkbook.Path & "\" & Trim(Range("C" & riga).Value) & Trim(Range("D" & riga).Value)
+  email = Trim(Range("B" & row).Value)
+  fileName = ThisWorkbook.Path & "\" & Trim(Range("C" & row).Value) & Trim(Range("D" & row).Value)
 Wend
 
-riga = riga - 1
-MsgBox "Finito alla riga " & riga, vbInformation
+row = row - 1
+MsgBox "Program ended at row: " & row, vbInformation
 
 End Sub
 
